@@ -1,0 +1,126 @@
+HTML, BODY {
+    padding: 0px;
+    margin: 0px;
+    font-size: 12px;
+    font-family: Tahoma;
+}
+
+BUTTON {
+    font-size: 14px;
+    border-collapse: collapse;
+    border: 1px solid #000000;
+    background-color: #dcdcdc;
+}
+
+DIV.view {
+    margin-top: 10px;
+    margin-left: 10%;
+    width: 80%;
+}
+
+.hidden {
+    display: none;
+}
+
+TABLE.flow {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 1px;
+    border-left: 1px solid #bcbcbc;
+    border-right: 1px solid #bcbcbc;
+}
+
+TABLE.flow > TBODY > TR > TH {
+    background-color: #ececec;
+}
+
+TABLE.flow > TBODY > TR > :first-child {
+    border-right: 1px solid #bcbcbc;
+}
+
+TABLE.flow > TBODY > TR > :last-child {
+    border-left: 1px solid #bcbcbc;
+}
+
+TABLE.flow > TBODY > TR > TD,
+TABLE.flow > TBODY > TR > TH {
+    border-top: 1px solid #bcbcbc;
+    padding: 1px;
+}
+
+TABLE.flow > TBODY > TR:last-child > TD {
+    border-bottom: 1px solid #bcbcbc;
+}
+
+TABLE.flow > TBODY > TR > TD {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+TABLE.flow > TBODY > TR > TD:first-child {
+    text-align: right;
+}
+
+TABLE.flow > TBODY > TR > TD.internet {
+    border: 0px;
+    width: 30px;
+    max-width: 30px;
+    overflow: hidden;
+}
+
+TABLE.flow > TBODY > TR > TD.internet > DIV {
+    width: 30px;
+    max-width: 30px;
+    font-style: italic;
+    font-size: 20px;
+    color: #bcbcbc;
+    white-space: nowrap;
+    -webkit-transform: rotate(-90deg);
+    letter-spacing: 3px;
+}
+
+BUTTON.active {
+    background-color: #00ff00;
+    cursor: pointer;
+}
+
+BUTTON.done {
+    background-color: rgb(160, 219, 160);
+}
+
+#payload {
+    margin-top: 0px;
+    margin-left: 15%;
+    width: 70%;
+    height: 200px;
+    margin-bottom: 10px;
+}
+
+#payload > DIV {
+    display: none;
+    overflow-y: auto;
+    width: 100%;
+    height: 200px;
+    border: 1px solid #0000ff;
+    background-color: #000000;
+}
+
+#payload > DIV > PRE {
+    margin: 5px;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+#envelope {
+    display: none;
+    position: absolute;
+    float: left;
+    left: 0px;
+    top: 0px;
+    width: 36px;
+    height: 28px;
+    background-image: url(envelope-icon.png);
+    background-size: 100% 100%;
+    z-index: 100px;
+    background-color: rgb(186, 186, 255);
+}

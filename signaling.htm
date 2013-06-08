@@ -1,0 +1,172 @@
+<html><head>
+<link rel="stylesheet" href="style.css">
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+</head><body>
+
+<div class="view">
+
+    <div id="payload"><div><pre></pre></div></div>
+
+    <table class="flow">
+        <tr>
+            <th>Alice</th>
+            <td rowspan="8" class="internet"><div>Internet</div></td>
+            <th>Bob</th>
+        </tr>
+        <tr>
+            <td><button onclick="createOffer()">Create Offer</button></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><button onclick="postOffer()">Post Offer</button></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><button onclick="fetchOffer()">Fetch Offer</button></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><button onclick="createAnswer()">Create Answer</button></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><button onclick="postAnswer()">Post Answer</button></td>
+        </tr>
+        <tr>
+            <td><button onclick="fetchAnswer()">Fetch Answer</button></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><button onclick="connectAlice()">Connect</button></td>
+            <td><button onclick="connectBob()">Connect</button></td>
+        </tr>
+    </table>
+
+</div>
+
+<img id="envelope" class="hidden"/>
+
+<script>
+
+var lastStep = null;
+$('BUTTON').attr('disabled','disabled');
+highlightStep('createOffer');
+
+// ############################################################
+// # Signaling
+// ############################################################
+
+function createOffer() {
+    console.log("createOffer");
+
+    highlightStep('postOffer', true, "POST PAYLOAD");
+}
+
+function postOffer() {
+    console.log("postOffer");
+
+    highlightStep('fetchOffer', 'internet');
+}
+
+function fetchOffer() {
+    console.log("fetchOffer");
+
+    highlightStep('createAnswer', true);
+}
+
+function createAnswer() {
+    console.log("createAnswer");
+
+    highlightStep('postAnswer', true, "ANSWER PAYLOAD");
+}
+
+function postAnswer() {
+    console.log("postAnswer");
+
+    highlightStep('fetchAnswer', 'internet');
+}
+
+function fetchAnswer() {
+    console.log("fetchAnswer");
+
+    highlightStep('connectAlice', true);
+}
+
+function connectAlice() {
+    console.log("connectAlice");
+
+    highlightStep('connectBob');
+}
+
+function connectBob() {
+    console.log("connectBob");
+
+    highlightStep(null);
+}
+
+// ############################################################
+// # Helpers for UI
+// ############################################################
+
+function highlightStep(step, moveEnvelope, payload) {
+    var btn = null;
+    var envelope = $('#envelope');
+    if (lastStep) {
+        btn = $('BUTTON[onclick="' + lastStep + '()"]');
+        btn.removeClass('active');
+        btn.addClass('done');
+        btn.attr('disabled','disabled');
+    }
+    if (step) {
+        btn = $('BUTTON[onclick="' + step + '()"]');
+        btn.addClass('active');
+        btn.removeAttr('disabled');
+        if (moveEnvelope) {
+            moveEnvelopeToStep(step, moveEnvelope);
+        } else {
+            envelope.hide();
+        }
+        if (payload) {
+            $('#payload > DIV').fadeOut('fast', function() {
+                $('#payload > DIV > PRE').html(payload);
+                $('#payload > DIV').fadeIn('slow');
+            });
+        }
+    }
+    lastStep = step;
+}
+
+function moveEnvelopeToStep(step, moveEnvelope) {
+    var envelope = $('#envelope');
+    var offset = offsetForStep(step, moveEnvelope);
+    if (!envelope.is(":visible")) {
+        envelope.offset(offset);
+        envelope.show();
+    } else {
+        envelope.animate(offset, 500, function() {
+
+        });
+    }
+}
+
+function offsetForStep(step, moveEnvelope) {
+    var docWidth = $(document).width();
+    var envelope = $('#envelope');
+    var btn = $('BUTTON[onclick="' + step + '()"]');
+    var offset = btn.offset();
+    if (moveEnvelope === 'internet') {
+        offset.left = docWidth/2 - envelope.width()/2 - 15;
+    } else
+    if (offset.left < docWidth/2) {
+        offset.left -= 100 + envelope.width();
+    } else {
+        offset.left += btn.width() + 100;
+    }
+    offset.top -= 2;
+    return offset;
+}
+
+</script>
+
+</body></html>
