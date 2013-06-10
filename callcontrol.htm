@@ -126,20 +126,20 @@ function accept() {
         // Tightly couple trickle ICE.
         alice_peerConnection.onicecandidate = function(event) {
             if (!event.candidate) return;
-            bob_peerConnection.addIceCandidate(new WEBRTC_SHIM.IceCandidate(JSON.stringify(event.candidate)));
+            bob_peerConnection.addIceCandidate(new WEBRTC_SHIM.IceCandidate(JSON.parse(JSON.stringify(event.candidate))));
         }
         bob_peerConnection.onicecandidate = function(event) {
             if (!event.candidate) return;
-            alice_peerConnection.addIceCandidate(new WEBRTC_SHIM.IceCandidate(JSON.stringify(event.candidate)));
+            alice_peerConnection.addIceCandidate(new WEBRTC_SHIM.IceCandidate(JSON.parse(JSON.stringify(event.candidate))));
         }
 
         // Tightly couple session description exchange.
         alice_peerConnection.createOffer(function (sessionDescription) {
             alice_peerConnection.setLocalDescription(sessionDescription);
-            bob_peerConnection.setRemoteDescription(new WEBRTC_SHIM.SessionDescription(sessionDescription));
+            bob_peerConnection.setRemoteDescription(new WEBRTC_SHIM.SessionDescription(JSON.parse(JSON.stringify(sessionDescription))));
             bob_peerConnection.createAnswer(function (sessionDescription) {
                 bob_peerConnection.setLocalDescription(sessionDescription);
-                alice_peerConnection.setRemoteDescription(new WEBRTC_SHIM.SessionDescription(sessionDescription));
+                alice_peerConnection.setRemoteDescription(new WEBRTC_SHIM.SessionDescription(JSON.parse(JSON.stringify(sessionDescription))));
             });
         }, fail);
     }, fail);
