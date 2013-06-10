@@ -5,6 +5,13 @@ HTML, BODY {
     font-family: Tahoma;
 }
 
+BODY > A > IMG {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border: 0;
+}
+
 BUTTON {
     font-size: 14px;
     border-collapse: collapse;
@@ -19,6 +26,20 @@ DIV.view {
 :-webkit-full-screen {
   width: 100%;
   height: 100%;
+}
+
+DIV.view-home {
+    padding: 50px;
+    padding-left: 80px;
+    font-size: 18px;
+}
+
+DIV.view-home > H1 {
+    margin-bottom: 50px;
+}
+
+DIV.view-home > UL > LI {
+    margin-bottom: 20px;
 }
 
 .hidden {
