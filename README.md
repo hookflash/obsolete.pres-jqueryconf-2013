@@ -1,7 +1,7 @@
 jQuery Conference Portland 2013
 ===============================
 
-View presentation online: http://openpeer.github.io/pres-jqueryconf-2013/
+View presentation online: http://openpeer.github.io/pres-jqueryconf-2013
 
 Usage
 -----
