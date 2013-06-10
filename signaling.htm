@@ -4,47 +4,37 @@
 <script src="https://rawgithub.com/openpeer/webrtc-shim/v0.1.2/webrtc-shim.js"></script>
 </head><body>
 
-<div class="view">
-
-    <div id="payload"><div><pre></pre></div></div>
+<div class="view view-callcontrol">
 
     <table class="flow">
         <tr>
             <th>Alice</th>
-            <td rowspan="8" class="internet"><div>Internet</div></td>
+            <td rowspan="4" class="internet"></td>
             <th>Bob</th>
         </tr>
         <tr>
-            <td><button onclick="createOffer()">Create Offer</button></td>
-            <td></td>
+            <td class="video">
+                <div>
+                    <video id="alice_localVideo" class="local" autoplay="autoplay" muted="true"></video>
+                    <video id="alice_remoteVideo" class="remote" autoplay="autoplay"></video>
+                </div>
+            </td>
+            <td class="video">
+                <div>
+                    <video id="bob_localVideo" class="local" autoplay="autoplay" muted="true"></video>
+                    <video id="bob_remoteVideo" class="remote" autoplay="autoplay"></video>
+                </div>
+            </td>
         </tr>
         <tr>
-            <td><button onclick="postOffer()">Post Offer</button></td>
-            <td></td>
+            <td><button onclick="call()">Call</button> <button onclick="hangupOffer()">Hangup</button></td>
+            <td><button onclick="accept()">Accept</button> <button onclick="decline()">Decline</button></td>
         </tr>
         <tr>
-            <td></td>
-            <td><button onclick="fetchOffer()">Fetch Offer</button></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td><button onclick="createAnswer()">Create Answer</button></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td><button onclick="postAnswer()">Post Answer</button></td>
-        </tr>
-        <tr>
-            <td><button onclick="fetchAnswer()">Fetch Answer</button></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td><button onclick="connectAlice()">Connect</button></td>
-            <td></td>
+            <td><button onclick="hangup()">Hangup</button></td>
+            <td><button onclick="hangup()">Hangup</button></td>
         </tr>
     </table>
-
-    <img id="envelope" class="hidden"/>
 
 </div>
 
@@ -52,9 +42,9 @@
 
 <script>
 
-var lastStep = null;
 $('BUTTON').attr('disabled','disabled');
-highlightStep('createOffer');
+$('TD.video > DIV').hide();
+enableButtons([ 'call' ]);
 
 function fail(err) {
     console.error(err, err.stack);
@@ -62,247 +52,117 @@ function fail(err) {
 }
 
 // ############################################################
-// # Signaling
+// # Signaling & control
 // ############################################################
 
+// We setup two clients and connections in same page and tightly couple them to demonstrate call control.
+// To see how to decouple these connections across two browsers/users see the 'signaling' and 'complete' demos.
+
 var alice_peerConnection = null;
-var alice_peerChannel = null;
-var alice_offer_for_bob = null;
-var alice_answer_from_bob = null;
-
-var server_offer_store = null;
-var server_answer_store = null;
-
-var bob_offer_from_alice = null;
 var bob_peerConnection = null;
-var bob_answer_for_alice = null;
+var localStream = null;
 
-function createOffer() {
-
-    alice_peerConnection = new WEBRTC_SHIM.PeerConnection(WEBRTC_SHIM.PeerConnConfig, {
-        optional: [ { RtpDataChannels: true } ]
-    });
-
-    alice_peerConnection.onicecandidate = function(event) {
-        // ICE trickle candidate.
-        if (event.candidate) {
-            // We can ignore this as candidate will be added to session description
-            // when we create a new offer when ICE candidate gathering completes.
-        }
-        // ICE candidate gathering complete.
-        else {
-            // Create a new offer to get a new session description that includes all ICE candidates.
-            alice_peerConnection.createOffer(function (sessionDescription) {
-                alice_offer_for_bob = sessionDescription;
-                // Show the updated session description.
-                highlightStep('postOffer', true, sessionDescription.sdp);
-            }, fail);
-        }
-    };
-
-    // Request a data channel for the connection (we don't care about video for this signaling demo).
-    alice_peerChannel = alice_peerConnection.createDataChannel('messaging', {
-        // Reliable (TCP-like) data channel is not yet supported.
-        reliable: false
-    });
-
-    // Initiate offer creation. The session description we get here includes no ICE candidates.
-    alice_peerConnection.createOffer(function (sessionDescription) {
-        // Let our local peer connection know the session description we want to use.
-        alice_peerConnection.setLocalDescription(sessionDescription);
-        // Now we wait for all ICE candidates to trickle in.
-        // We show the session description we already have and update it once we have all ICE candidates.
-        highlightStep('createOffer', true,
-            '\n... waiting for all ICE candiates to trickle in ...\n\n\n' +
-            sessionDescription.sdp +
-            '\n\n... waiting for all ICE candiates to trickle in ...\n\n'
-        );
-    }, fail);
+function call() {
+    disableButtons([ 'call' ]);
+    enableButtons([ 'hangupOffer', 'accept', 'decline']);
 }
 
-function postOffer() {
-
-    // Usually you would send the `alice_offer_for_bob` to a server and store it for Bob to fetch.
-    // For this example we assign it to `server_offer_store` which replaces the server.
-    server_offer_store = JSON.stringify(alice_offer_for_bob);
-
-    highlightStep('fetchOffer', 'internet');
+function hangupOffer() {
+    disableButtons([ 'hangupOffer', 'accept', 'decline' ]);
+    enableButtons([ 'call' ]);
 }
 
-function fetchOffer() {
-
-    // Usually you would fetch the offer from Alice from a server.
-    // For this example we get it from `server_offer_store` which replaces the server.
-    bob_offer_from_alice = JSON.parse(server_offer_store);
-
-    highlightStep('createAnswer', true);
+function decline() {
+    disableButtons([ 'hangupOffer', 'accept', 'decline' ]);
+    enableButtons([ 'call' ]);
 }
 
-function createAnswer() {
+function hangup() {
+    if (alice_peerConnection) alice_peerConnection.close();
+    if (bob_peerConnection) bob_peerConnection.close();
+    if (localStream) localStream.stop();
+    $('TD.video > DIV').hide();
+    disableButtons([ 'hangup' ]);
+    enableButtons([ 'call' ]);
+}
 
-    bob_peerConnection = new WEBRTC_SHIM.PeerConnection(WEBRTC_SHIM.PeerConnConfig, {
-        optional: [ { RtpDataChannels: true } ]
-    });
+function accept() {
 
-    bob_peerConnection.onicecandidate = function(event) {
-        // ICE trickle candidate.
-        if (event.candidate) {
-            // We can ignore this as candidate will be added to session description
-            // when we create a new answer when ICE candidate gathering completes.
+    disableButtons([ 'hangupOffer', 'accept', 'decline' ]);
+    enableButtons([ 'hangup' ]);
+
+    alice_peerConnection = new WEBRTC_SHIM.PeerConnection(WEBRTC_SHIM.PeerConnConfig);
+    bob_peerConnection = new WEBRTC_SHIM.PeerConnection(WEBRTC_SHIM.PeerConnConfig);
+
+    // Request access to local webcam and microphone.
+    WEBRTC_SHIM.getUserMedia({
+        'audio': true,
+        'video': true
+    }, function (stream) {
+
+        if (!alice_peerConnection || !bob_peerConnection) {
+            stream.stop();
+            return;
         }
-        // ICE candidate gathering complete.
-        else {
-            // Create a new answer to get a new session description that includes all ICE candidates.
+
+        $('TD.video > DIV').show();
+
+        localStream = stream;
+
+        $('#alice_localVideo').attr('src', WEBRTC_SHIM.URL.createObjectURL(localStream));
+        $('#bob_localVideo').attr('src', WEBRTC_SHIM.URL.createObjectURL(localStream));
+
+        alice_peerConnection.onaddstream = function (event) {
+            $('#alice_remoteVideo').attr('src', WEBRTC_SHIM.URL.createObjectURL(event.stream));
+        };
+        bob_peerConnection.onaddstream = function (event) {
+            $('#bob_remoteVideo').attr('src', WEBRTC_SHIM.URL.createObjectURL(event.stream));
+        };
+
+        // Attach local video & audio stream to connection to stream it to peer.
+        alice_peerConnection.addStream(localStream);
+        bob_peerConnection.addStream(localStream);
+
+        // Tightly couple trickle ICE.
+        alice_peerConnection.onicecandidate = function(event) {
+            if (!event.candidate) return;
+            bob_peerConnection.addIceCandidate(new WEBRTC_SHIM.IceCandidate(JSON.parse(JSON.stringify(event.candidate))));
+        }
+        bob_peerConnection.onicecandidate = function(event) {
+            if (!event.candidate) return;
+            alice_peerConnection.addIceCandidate(new WEBRTC_SHIM.IceCandidate(JSON.parse(JSON.stringify(event.candidate))));
+        }
+
+        // Tightly couple session description exchange.
+        alice_peerConnection.createOffer(function (sessionDescription) {
+            alice_peerConnection.setLocalDescription(sessionDescription);
+            bob_peerConnection.setRemoteDescription(new WEBRTC_SHIM.SessionDescription(JSON.parse(JSON.stringify(sessionDescription))));
             bob_peerConnection.createAnswer(function (sessionDescription) {
-                bob_answer_for_alice = sessionDescription;
-                // Show the updated session description.
-                highlightStep('postAnswer', true, sessionDescription.sdp);
-            }, fail);
-        }
-    };
-
-    // We get notified for each data channel that was requested by Alice when
-    // her offer (session description) is set on our connection (`bob_peerConnection.setRemoteDescription`).
-    bob_peerConnection.ondatachannel = function(event) {
-        var dataChannel = event.channel;
-        // Wait for data channel to open which happens when peer connection is established.
-        dataChannel.onopen = function() {
-            logToConsole('[Bob] data channel open');
-            dataChannel.onmessage = function(event) {
-                logToConsole('[Bob] Received message: ' + event.data);
-                logToConsole('[Bob] Send message: ' + 'Hello from Bob!');
-                dataChannel.send('Hello from Bob!');
-            }
-        }
-    }
-
-    // We set the offer (session description) we received from Alice before creating our answer.
-    bob_peerConnection.setRemoteDescription(new WEBRTC_SHIM.SessionDescription(bob_offer_from_alice));
-
-    // Initiate answer creation. The session description we get here includes no ICE candidates.
-    bob_peerConnection.createAnswer(function (sessionDescription) {
-        // Let our local peer connection know the session description we want to use.
-        bob_peerConnection.setLocalDescription(sessionDescription);
-        // Now we wait for all ICE candidates to trickle in.
-        // We show the session description we already have and update it once we have all ICE candidates.
-        highlightStep('createAnswer', true,
-            '\n... waiting for all ICE candiates to trickle in ...\n\n\n' +
-            sessionDescription.sdp +
-            '\n\n... waiting for all ICE candiates to trickle in ...\n\n'
-        );
+                bob_peerConnection.setLocalDescription(sessionDescription);
+                alice_peerConnection.setRemoteDescription(new WEBRTC_SHIM.SessionDescription(JSON.parse(JSON.stringify(sessionDescription))));
+            });
+        }, fail);
     }, fail);
-}
-
-function postAnswer() {
-
-    // Usually you would send the `bob_answer_for_alice` to a server and store it for Alice to fetch.
-    // For this example we assign it to `server_answer_store` which replaces the server.
-    server_answer_store = JSON.stringify(bob_answer_for_alice);
-
-    highlightStep('fetchAnswer', 'internet');
-}
-
-function fetchAnswer() {
-
-    // Usually you would fetch the Answer from Bob from a server.
-    // For this example we get it from `server_answer_store` which replaces the server.
-    alice_answer_from_bob = JSON.parse(server_answer_store);
-
-    highlightStep('connectAlice', true);
-}
-
-function connectAlice() {
-
-    // We wait for the peer channel to open (which happens after `alice_peerConnection.setRemoteDescription`)
-    // and send a test message.
-    alice_peerChannel.onopen = function() {
-        logToConsole('[Alice] data channel open');
-        alice_peerChannel.onmessage = function(event) {
-            logToConsole('[Alice] Received message: ' + event.data);
-        }
-        logToConsole('[Alice] Send message: ' + 'Hello from Alice!');
-        alice_peerChannel.send('Hello from Alice!');
-    }
-
-    // We set the answer (session description) we received from Bob.
-    // This completes the signaling process and the connection will be established as per ICE candidates.
-    alice_peerConnection.setRemoteDescription(new WEBRTC_SHIM.SessionDescription(alice_answer_from_bob));
-
-    highlightStep(null);
 }
 
 // ############################################################
 // # Helpers for UI
 // ############################################################
 
-var consoleMessages = [];
-function logToConsole(message) {
-    consoleMessages.push(message);
-    highlightStep(null, null, consoleMessages.join('\n'));
-}
-
-function highlightStep(step, moveEnvelope, payload) {
-    var btn = null;
-    var envelope = $('#envelope');
-    if (lastStep) {
-        btn = $('BUTTON[onclick="' + lastStep + '()"]');
-        btn.removeClass('active');
-        btn.addClass('done');
-        btn.attr('disabled','disabled');
-    }
-    if (step) {
-        btn = $('BUTTON[onclick="' + step + '()"]');
+function enableButtons(names) {
+    names.forEach(function(name) {
+        var btn = $('BUTTON[onclick="' + name + '()"]');
         btn.addClass('active');
-        if (step !== lastStep) btn.removeAttr('disabled');
-        if (moveEnvelope) {
-            moveEnvelopeToStep(step, moveEnvelope);
-        } else {
-            envelope.hide();
-        }
-        if (payload) {
-            $('#payload > DIV').fadeOut('fast', function() {
-                $('#payload > DIV > PRE').html(payload);
-                $('#payload > DIV').fadeIn('slow');
-            });
-        }
-    } else {
-        envelope.hide();
-        if (payload) {
-            $('#payload > DIV').show();
-            $('#payload > DIV > PRE').html(payload);
-        }
-    }
-    lastStep = step;
+        btn.removeAttr('disabled');
+    });
 }
 
-function moveEnvelopeToStep(step, moveEnvelope) {
-    var envelope = $('#envelope');
-    var offset = offsetForStep(step, moveEnvelope);
-    if (!envelope.is(':visible')) {
-        envelope.offset(offset);
-        envelope.show();
-    } else {
-        envelope.animate(offset, 500, function() {
-
-        });
-    }
-}
-
-function offsetForStep(step, moveEnvelope) {
-    var docWidth = $(document).width();
-    var envelope = $('#envelope');
-    var btn = $('BUTTON[onclick="' + step + '()"]');
-    var offset = btn.offset();
-    if (moveEnvelope === 'internet') {
-        offset.left = docWidth/2 - envelope.width()/2 - 15;
-    } else
-    if (offset.left < docWidth/2) {
-        offset.left -= 100 + envelope.width();
-    } else {
-        offset.left += btn.width() + 100;
-    }
-    offset.top -= 2;
-    return offset;
+function disableButtons(names) {
+    names.forEach(function(name) {
+        var btn = $('BUTTON[onclick="' + name + '()"]');
+        btn.removeClass('active');
+        btn.attr('disabled','disabled');
+    });
 }
 
 function fullscreen() {
