@@ -47,7 +47,7 @@ DIV.view-callcontrol {
 }
 
 .hidden {
-    display: none !important;
+    display: none;
 }
 
 TABLE.flow {

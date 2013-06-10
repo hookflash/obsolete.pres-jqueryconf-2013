@@ -14,13 +14,13 @@
         </tr>
         <tr>
             <td class="video">
-                <div class="hidden">
+                <div>
                     <video id="alice_localVideo" class="local" autoplay="autoplay" muted="true"></video>
                     <video id="alice_remoteVideo" class="remote" autoplay="autoplay"></video>
                 </div>
             </td>
             <td class="video">
-                <div class="hidden">
+                <div>
                     <video id="bob_localVideo" class="local" autoplay="autoplay" muted="true"></video>
                     <video id="bob_remoteVideo" class="remote" autoplay="autoplay"></video>
                 </div>
@@ -42,8 +42,8 @@
 
 <script>
 
-var lastStep = null;
 $('BUTTON').attr('disabled','disabled');
+$('TD.video > DIV').hide();
 enableButtons([ 'call' ]);
 
 function fail(err) {
