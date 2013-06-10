@@ -167,11 +167,11 @@ function createAnswer() {
         var dataChannel = event.channel;
         // Wait for data channel to open which happens when peer connection is established.
         dataChannel.onopen = function() {
-            logToConsole("[Bob] data channel open");
+            logToConsole('[Bob] data channel open');
             dataChannel.onmessage = function(event) {
-                logToConsole("[Bob] Received message: " + event.data);
-                logToConsole("[Bob] Send message: " + "Hello from Bob!");
-                dataChannel.send("Hello from Bob!");
+                logToConsole('[Bob] Received message: ' + event.data);
+                logToConsole('[Bob] Send message: ' + 'Hello from Bob!');
+                dataChannel.send('Hello from Bob!');
             }
         }
     }
@@ -216,12 +216,12 @@ function connectAlice() {
     // We wait for the peer channel to open (which happens after `alice_peerConnection.setRemoteDescription`)
     // and send a test message.
     alice_peerChannel.onopen = function() {
-        logToConsole("[Alice] data channel open");
+        logToConsole('[Alice] data channel open');
         alice_peerChannel.onmessage = function(event) {
-            logToConsole("[Alice] Received message: " + event.data);
+            logToConsole('[Alice] Received message: ' + event.data);
         }
-        logToConsole("[Alice] Send message: " + "Hello from Alice!");
-        alice_peerChannel.send("Hello from Alice!");
+        logToConsole('[Alice] Send message: ' + 'Hello from Alice!');
+        alice_peerChannel.send('Hello from Alice!');
     }
 
     // We set the answer (session description) we received from Bob.
@@ -238,7 +238,7 @@ function connectAlice() {
 var consoleMessages = [];
 function logToConsole(message) {
     consoleMessages.push(message);
-    highlightStep(null, null, consoleMessages.join("\n"));
+    highlightStep(null, null, consoleMessages.join('\n'));
 }
 
 function highlightStep(step, moveEnvelope, payload) {
@@ -278,7 +278,7 @@ function highlightStep(step, moveEnvelope, payload) {
 function moveEnvelopeToStep(step, moveEnvelope) {
     var envelope = $('#envelope');
     var offset = offsetForStep(step, moveEnvelope);
-    if (!envelope.is(":visible")) {
+    if (!envelope.is(':visible')) {
         envelope.offset(offset);
         envelope.show();
     } else {

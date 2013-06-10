@@ -42,8 +42,12 @@ DIV.view-home > UL > LI {
     margin-bottom: 20px;
 }
 
+DIV.view-callcontrol {
+    padding-top: 20px;
+}
+
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 TABLE.flow {
@@ -150,7 +154,37 @@ BUTTON.done {
     background-color: rgb(186, 186, 255);
 }
 
+TABLE.flow > TBODY > TR > TD.video {
+    text-align: center;
+    padding: 20px;
+    height: 300px;
+}
+
+TD.video > DIV {
+    display: inline-block;
+    position: relative;
+    width: 335px;
+    height: 250px;
+}
+
+VIDEO.local {
+    position: absolute;
+    height: 30%;
+    width: 30%;
+    bottom: 10px;
+    right: 10px;
+    border: 1px solid black;
+    z-index: 10px;
+}
+
+VIDEO.remote {
+    border: 1px solid black;
+    width: 100%;
+    height: 100%;
+}
+
 DIV.footer {
     margin-top: 10px;
-    text-align: center;
+    margin-left: 10px;
+    text-align: left;
 }
