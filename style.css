@@ -19,10 +19,6 @@ BUTTON {
     background-color: #dcdcdc;
 }
 
-DIV.view {
-    width: 100%;
-}
-
 :-webkit-full-screen {
   width: 100%;
   height: 100%;

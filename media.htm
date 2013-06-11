@@ -55,8 +55,10 @@ function fail(err) {
 // # Signaling & control
 // ############################################################
 
-// We setup two clients and connections in same page and tightly couple them to demonstrate call control.
-// To see how to decouple these connections across two browsers/users see the 'signaling' and 'complete' demos.
+// We setup two clients and connections in the same page and tightly couple them
+// to demonstrate call control and how to hook up the media streams.
+// To see how to decouple these clients and connections across two browsers/users
+// see the 'Offer/Answer' and 'Identities' demos.
 
 var alice_peerConnection = null;
 var bob_peerConnection = null;
@@ -105,13 +107,16 @@ function accept() {
             return;
         }
 
+        // Show video HTML elements.
         $('TD.video > DIV').show();
 
         localStream = stream;
 
+        // Show local video & audio stream to the local video HTML elements.
         $('#alice_localVideo').attr('src', WEBRTC_SHIM.URL.createObjectURL(localStream));
         $('#bob_localVideo').attr('src', WEBRTC_SHIM.URL.createObjectURL(localStream));
 
+        // When a remote video & audio stream is added show it in the remote video HTML elements.
         alice_peerConnection.onaddstream = function (event) {
             $('#alice_remoteVideo').attr('src', WEBRTC_SHIM.URL.createObjectURL(event.stream));
         };
