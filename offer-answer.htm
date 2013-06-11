@@ -39,7 +39,7 @@
             <td></td>
         </tr>
         <tr>
-            <td><button onclick="connectAlice()">Connect</button></td>
+            <td><button onclick="fakeSuccessfulConnect()" class="hidden">Fake Successful Connect</button> <button onclick="connectAlice()">Connect</button></td>
             <td></td>
         </tr>
     </table>
@@ -213,12 +213,17 @@ function fetchAnswer() {
 
 function connectAlice() {
 
+    var successTimeout = setTimeout(function() {
+        highlightStep('fakeSuccessfulConnect');
+    }, 2000);
+
     // We wait for the peer channel to open (which happens after `alice_peerConnection.setRemoteDescription`)
     // and send a test message.
     alice_peerChannel.onopen = function() {
         logToConsole('[Alice] data channel open');
         alice_peerChannel.onmessage = function(event) {
             logToConsole('[Alice] Received message: ' + event.data);
+            clearTimeout(successTimeout);
         }
         logToConsole('[Alice] Send message: ' + 'Hello from Alice!');
         alice_peerChannel.send('Hello from Alice!');
@@ -229,6 +234,17 @@ function connectAlice() {
     alice_peerConnection.setRemoteDescription(new WEBRTC_SHIM.SessionDescription(alice_answer_from_bob));
 
     highlightStep(null);
+}
+
+function fakeSuccessfulConnect() {
+    highlightStep(null, null, [
+        '[Bob] data channel open',
+        '[Alice] data channel open',
+        '[Alice] Send message: Hello from Alice!',
+        '[Bob] Received message: Hello from Alice!',
+        '[Bob] Send message: Hello from Bob!',
+        '[Alice] Received message: Hello from Bob!'
+    ].join('\n'));
 }
 
 // ############################################################
@@ -252,6 +268,7 @@ function highlightStep(step, moveEnvelope, payload) {
     }
     if (step) {
         btn = $('BUTTON[onclick="' + step + '()"]');
+        btn.show();
         btn.addClass('active');
         if (step !== lastStep) btn.removeAttr('disabled');
         if (moveEnvelope) {
@@ -294,7 +311,7 @@ function offsetForStep(step, moveEnvelope) {
     var btn = $('BUTTON[onclick="' + step + '()"]');
     var offset = btn.offset();
     if (moveEnvelope === 'internet') {
-        offset.left = docWidth/2 - envelope.width()/2 - 15;
+        offset.left = docWidth/2 - envelope.width()/2;
     } else
     if (offset.left < docWidth/2) {
         offset.left -= 100 + envelope.width();

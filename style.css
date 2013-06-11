@@ -57,6 +57,7 @@ TABLE.flow {
 
 TABLE.flow > TBODY > TR > TH {
     background-color: #ececec;
+    width: 50%;
 }
 
 TABLE.flow > TBODY > TR > :first-child {
@@ -126,7 +127,7 @@ BUTTON.done {
     overflow-y: auto;
     width: 100%;
     height: 500px;
-    border: 1px solid #0000ff;
+    border: 1px solid #bcbcbc;
     background-color: #000000;
 }
 
