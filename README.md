@@ -10,6 +10,12 @@ Requirements:
 
   * [Google Chrome](https://www.google.com/chrome/)
 
+Install & run locally:
+
+    npm install
+    npm start
+    open http://localhost:8080/
+
 Deploy to [github pages](http://pages.github.com/):
 
     git checkout gh-pages

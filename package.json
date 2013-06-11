@@ -1,5 +1,13 @@
 {
 	"name": "pres-jqueryconf-2013",
 	"version": "0.1.0",
-	"private": true
+	"private": true,
+	"pm": "npm",
+    "main": "server.js",
+    "dependencies": {
+	    "send": "~0.1.1"
+    },
+    "scripts": {
+    	"start": "node ."
+    }
 }
