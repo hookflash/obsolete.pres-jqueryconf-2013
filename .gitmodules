@@ -1,0 +1,3 @@
+[submodule "identities"]
+	path = identities
+	url = git://github.com/openpeer/webrtc-demo.git

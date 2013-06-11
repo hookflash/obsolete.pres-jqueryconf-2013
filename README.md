@@ -12,6 +12,7 @@ Requirements:
 
 Install & run locally:
 
+    git submodule init
     npm install
     npm start
     open http://localhost:8080/
